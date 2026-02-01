@@ -1,0 +1,27 @@
+{
+  "name": "Bütçe Takip",
+  "short_name": "Bütçe",
+  "description": "Gelir ve giderlerinizi kolayca takip edin",
+  "start_url": "./budget-app.html",
+  "display": "standalone",
+  "background_color": "#0A0E27",
+  "theme_color": "#0A0E27",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0E27'/><text x='50' y='70' font-size='60' text-anchor='middle'>💰</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0E27'/><text x='50' y='70' font-size='60' text-anchor='middle'>💰</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "lang": "tr",
+  "dir": "ltr"
+}

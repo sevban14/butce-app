@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0A0E27">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bütçe Takip">
+    <meta name="description" content="Gelir ve giderlerinizi kolayca takip edin">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='80'>💰</text></svg>">
+    <title>Bütçe Takip</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A0E27;
+            --secondary: #1a1f3a;
+            --accent: #FFD700;
+            --success: #00D9A3;
+            --danger: #FF6B6B;
+            --text: #E8E9ED;
+            --text-muted: #9CA3AF;
+            --surface: #151932;
+            --border: #2A2F4A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #0f1428 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--surface) 100%);
+            border-radius: 24px;
+            padding: 32px 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .balance-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .balance-amount.positive {
+            color: var(--success);
+        }
+
+        .balance-amount.negative {
+            color: var(--danger);
+        }
+
+        .balance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-value.income {
+            color: var(--success);
+        }
+
+        .stat-value.expense {
+            color: var(--danger);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: var(--surface);
+            padding: 6px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .form-card.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #FFA500 100%);
+            color: var(--primary);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .transactions-list {
+            margin-bottom: 20px;
+        }
+
+        .transaction-item {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .transaction-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .transaction-item.income::before {
+            background: var(--success);
+        }
+
+        .transaction-item.expense::before {
+            background: var(--danger);
+        }
+
+        .transaction-info {
+            flex: 1;
+            padding-left: 12px;
+        }
+
+        .transaction-description {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .transaction-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .transaction-category {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .transaction-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .transaction-amount.income {
+            color: var(--success);
+        }
+
+        .transaction-amount.expense {
+            color: var(--danger);
+        }
+
+        .delete-btn {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            color: var(--danger);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-left: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+
+        .currency-symbol {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .balance-amount {
+                font-size: 40px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Bütçe Takip</h1>
+            <p>Gelir ve giderlerinizi yönetin</p>
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-label">TOPLAM BAKİYE</div>
+            <div class="balance-amount" id="totalBalance">₺0</div>
+            <div class="balance-stats">
+                <div class="stat">
+                    <div class="stat-label">Gelir</div>
+                    <div class="stat-value income" id="totalIncome">₺0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Gider</div>
+                    <div class="stat-value expense" id="totalExpense">₺0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('add')">İşlem Ekle</button>
+            <button class="tab" onclick="switchTab('list')">İşlemler</button>
+        </div>
+
+        <div class="form-card active" id="addTab">
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label for="type">İşlem Tipi</label>
+                    <select id="type" required>
+                        <option value="income">Gelir</option>
+                        <option value="expense">Gider</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Açıklama</label>
+                    <input type="text" id="description" placeholder="Örn: Maaş, Market alışverişi" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Tutar (₺)</label>
+                    <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <select id="category" required>
+                        <option value="maaş">Maaş</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="yatırım">Yatırım</option>
+                        <option value="market">Market</option>
+                        <option value="ulaşım">Ulaşım</option>
+                        <option value="fatura">Fatura</option>
+                        <option value="eğlence">Eğlence</option>
+                        <option value="sağlık">Sağlık</option>
+                        <option value="eğitim">Eğitim</option>
+                        <option value="kira">Kira</option>
+                        <option value="diğer">Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Tarih</label>
+                    <input type="date" id="date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">İşlem Ekle</button>
+            </form>
+        </div>
+
+        <div class="form-card" id="listTab">
+            <div class="transactions-list" id="transactionsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">Henüz işlem yok</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Service Worker kaydı
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker kayıtlı'))
+                    .catch(err => console.log('Service Worker hatası:', err));
+            });
+        }
+
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallBanner();
+        });
+
+        function showInstallBanner() {
+            const banner = document.createElement('div');
+            banner.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                color: #0A0E27;
+                padding: 16px 20px;
+                border-radius: 16px;
+                box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4);
+                z-index: 1000;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: 600;
+                animation: slideUp 0.4s ease;
+            `;
+            banner.innerHTML = `
+                <span>📱 Ana ekrana ekle</span>
+                <button id="installBtn" style="background: #0A0E27; color: #FFD700; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">Ekle</button>
+            `;
+            document.body.appendChild(banner);
+
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                }
+                banner.remove();
+            });
+
+            setTimeout(() => {
+                if (banner.parentElement) {
+                    banner.style.animation = 'slideDown 0.4s ease';
+                    setTimeout(() => banner.remove(), 400);
+                }
+            }, 10000);
+        }
+
+        // Bugünün tarihini ayarla
+        document.getElementById('date').valueAsDate = new Date();
+
+        // LocalStorage'dan işlemleri yükle
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // Sayfa yüklendiğinde göster
+        updateDisplay();
+
+        // Tab değiştirme
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const formCards = document.querySelectorAll('.form-card');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            formCards.forEach(fc => fc.classList.remove('active'));
+            
+            if (tab === 'add') {
+                tabs[0].classList.add('active');
+                document.getElementById('addTab').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('listTab').classList.add('active');
+            }
+        }
+
+        // Form gönderme
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted!');
+            
+            const type = document.getElementById('type').value;
+            const description = document.getElementById('description').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            
+            console.log('Form values:', { type, description, amount, category, date });
+            
+            if (!description || !amount || amount <= 0) {
+                alert('Lütfen tüm alanları doğru şekilde doldurun!');
+                return;
+            }
+            
+            const transaction = {
+                id: Date.now(),
+                type: type,
+                description: description,
+                amount: amount,
+                category: category,
+                date: date
+            };
+            
+            console.log('Transaction created:', transaction);
+            
+            transactions.push(transaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            console.log('All transactions:', transactions);
+            
+            // Formu sıfırla
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('date').valueAsDate = new Date();
+            
+            updateDisplay();
+            switchTab('list');
+            
+            alert('İşlem başarıyla eklendi!');
+        });
+
+        // Ekranı güncelle
+        function updateDisplay() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    totalIncome += t.amount;
+                } else {
+                    totalExpense += t.amount;
+                }
+            });
+            
+            const balance = totalIncome - totalExpense;
+            
+            // Bakiyeleri güncelle
+            const balanceEl = document.getElementById('totalBalance');
+            balanceEl.textContent = formatCurrency(balance);
+            balanceEl.className = 'balance-amount ' + (balance >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+            
+            // İşlem listesini güncelle
+            displayTransactions();
+        }
+
+        // İşlemleri listele
+        function displayTransactions() {
+            const listEl = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">Henüz işlem yok</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Tarihe göre sırala (en yeni önce)
+            const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            listEl.innerHTML = sorted.map(t => `
+                <div class="transaction-item ${t.type}">
+                    <div class="transaction-info">
+                        <div class="transaction-description">${t.description}</div>
+                        <div class="transaction-meta">
+                            <span class="transaction-category">${t.category}</span>
+                            <span>${formatDate(t.date)}</span>
+                        </div>
+                    </div>
+                    <div class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction(${t.id})">Sil</button>
+                </div>
+            `).join('');
+        }
+
+        // İşlem sil
+        function deleteTransaction(id) {
+            if (confirm('Bu işlemi silmek istediğinizden emin misiniz?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                updateDisplay();
+            }
+        }
+
+        // Para birimi formatla
+        function formatCurrency(amount) {
+            return '₺' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Tarih formatla
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return date.toLocaleDateString('tr-TR', options);
+        }
+    </script>
+</body>
+</html>
